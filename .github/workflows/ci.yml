@@ -18,3 +18,5 @@ jobs:
         run: poetry run mypy .
       - name: Run the tests
         run: poetry run pytest
+      - name: Run the example
+        run: poetry run python example.py
