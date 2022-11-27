@@ -4,6 +4,16 @@
 
 Parse & validate hierarchical pipe delimited text into [Pydantic](https://github.com/pydantic/pydantic) models.
 
+A bit rough and hacky at the moment, mostly here just for fun and interest. Use with caution!
+
+## Install
+
+Requires Python 3.9+
+
+```
+pip install pipedantic
+```
+
 ## What the heck is hierarchical pipe delimited text?
 
 A poor explanation would be:
