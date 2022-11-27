@@ -1,48 +1,22 @@
-# Suppose we have a file.
-# Here use io.StringIO to fake a file.
-
 import io
-
-file = io.StringIO(
-    """01|Peter|1990-02-18|
-02|I like cake|42|
-02|Dogs are fun|101|
-03|dog|Molly|
-01|Luke|1991-02-18|
-03|cat|Tilly|
-01|Alice|1994-02-25|"""
-)
-
-
-##################################################
-
-# Let's parse this file into Pydantic models!
-
-import typing as t
 import datetime
 import pydantic
 
-from pipedantic import PipeDelimitedFileParser
+from pipedantic import PipeDelimitedFileParser, FileParseError
 
 
-# Define the models
-
-
-class Pet(pydantic.BaseModel):
-    type: t.Literal["dog", "cat"]
-    name: str
+# Define the models/spec
 
 
 class Comment(pydantic.BaseModel):
+    posted_at: datetime.date
     text: str
-    likes: int
 
 
 class User(pydantic.BaseModel):
     name: str
-    dob: datetime.date
+    age: int
     comments: list[Comment]
-    pet: t.Optional[Pet]
 
 
 class Root(pydantic.BaseModel):
@@ -56,39 +30,61 @@ parser = PipeDelimitedFileParser[Root](
     line_models={
         "01": User,
         "02": Comment,
-        "03": Pet,
     },
 )
 
 
-# Parse the file
+# Open a file
+# Fake it with io.StringIO
 
-
+file = io.StringIO(
+    """01|Holly|16|
+02|2022-01-01|Awesome!|
+01|Andy|24|
+02|2022-02-02|Wicked!|
+02|2022-03-03|Sweet!|"""
+)
 lines = iter(file.read().splitlines())
+
+
+# Parse the file
 
 data = parser.parse(lines=lines)
 assert data == Root(
     users=[
         User(
-            name="Peter",
-            dob=datetime.date(1990, 2, 18),
+            name="Holly",
+            age=16,
+            comments=[Comment(posted_at=datetime.date(2022, 1, 1), text="Awesome!")],
+        ),
+        User(
+            name="Andy",
+            age=24,
             comments=[
-                Comment(text="I like cake", likes=42),
-                Comment(text="Dogs are fun", likes=101),
+                Comment(posted_at=datetime.date(2022, 2, 2), text="Wicked!"),
+                Comment(posted_at=datetime.date(2022, 3, 3), text="Sweet!"),
             ],
-            pet=Pet(type="dog", name="Molly"),
-        ),
-        User(
-            name="Luke",
-            dob=datetime.date(1991, 2, 18),
-            comments=[],
-            pet=Pet(type="cat", name="Tilly"),
-        ),
-        User(
-            name="Alice",
-            dob=datetime.date(1994, 2, 25),
-            comments=[],
-            pet=None,
         ),
     ]
 )
+
+
+# If the file is invalid we will get an error
+
+
+# Andy's 1st comment has an invalid posted_at
+file = io.StringIO(
+    """01|Holly|16|
+02|2022-01-01|Awesome!|
+01|Andy|24|
+02|oops|Wicked!|
+02|2022-03-03|Sweet!|"""
+)
+lines = iter(file.read().splitlines())
+
+try:
+    parser.parse(lines=lines)
+    assert False
+except FileParseError as e:
+    assert e.error == "[posted_at] invalid date format"
+    assert e.line_number == 4
