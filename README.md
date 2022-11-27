@@ -60,14 +60,13 @@ This would correspond to the hierarchical data:
 }
 ```
 
-We could codify this spec and parse the pipe delimited text into Pydantic models using this pipedantic!
+We could codify this spec and parse the pipe delimited text into Pydantic models using pipedantic!
 A spec might look like this:
 
 ```py
 class Comment(pydantic.BaseModel):
     posted_at: datetime.date
     text: str
-
 
 class User(pydantic.BaseModel):
     name: str
@@ -88,7 +87,10 @@ parser = PipeDelimitedFileParser[Root](
         "02": Comment,
     },
 )
-data = parser.parse(lines=lines)  # A FileParseError will be raised if the file is invalid
+data = parser.parse(lines=lines)
 ```
 
-See [example.py](/example.py) and also the tests for more...
+A `FileParseError` will be raised if the file is invalid, which contains error details and the line number of the error.
+If the file is valid the return type will be `Root`. 
+
+See [example.py](/example.py) and also the tests for more.
