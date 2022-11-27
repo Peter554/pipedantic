@@ -51,6 +51,7 @@ class PipeDelimitedFileParser(t.Generic[T]):
         if line_fields:
             line_number, line = self._peek_lines.consume()
             line_parts = line.split("|")
+            line_parts = [s or None for s in line_parts]
             assert line_parts[0] == rule
             line_parts = line_parts[1:]
             if len(line_parts) < len(line_fields):
