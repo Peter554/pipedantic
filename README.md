@@ -8,18 +8,10 @@ A bit rough and hacky at the moment, mostly here just for fun and interest. Use 
 
 ## What the heck is hierarchical pipe delimited text?
 
-A poor explanation would be:
-
-* Lines of data where fields are delimited with a pipe (`|`)
-  * The first field of each line identifies the node type.
-  * The later fields are actual data.
-* The node types each have a spec. E.g. the names and types of the fields for that node.
-* The node spec may be hierarchical, i.e. a node can contain children.
-
 It's easiest to explain with an example. For example, suppose we have `User`s, each with a `name` (string) and an `age` (int). 
 And suppose those `User`s have `Comment`s. The comments have a `posted_at` (date) and a `text` (string).
 
-We could then represent those `User`s and their `Comment`s in a pipe delimited text file as so:
+We could then represent those `User`s and their `Comment`s in a hierarchical pipe delimited text file as so:
 
 ```txt
 01|Holly|16|
@@ -29,7 +21,8 @@ We could then represent those `User`s and their `Comment`s in a pipe delimited t
 02|2022-03-03|Sweet!|
 ```
 
-This would correspond to the hierarchical data:
+Here the lines starting with "01" represent a `User`, and the lines beneath starting with "02" represent that `User`s `Comment`s.
+In JSON, this would correspond to the hierarchical data:
 
 ```json
 {
@@ -89,7 +82,9 @@ parser = PipeDelimitedFileParser[Root](
         "02": Comment,
     },
 )
-data = parser.parse(lines=lines)
+
+with open("data") as f:
+    data = parser.parse(file=f)
 ```
 
 A `FileParseError` will be raised if the file is invalid, which contains error details and the line number of the error.

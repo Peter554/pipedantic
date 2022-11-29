@@ -34,22 +34,11 @@ parser = PipeDelimitedFileParser[Root](
 )
 
 
-# Open a file
-# Fake it with io.StringIO
+# Open and parse the file
 
-file = io.StringIO(
-    """01|Holly|16|
-02|2022-01-01|Awesome!|
-01|Andy|24|
-02|2022-02-02|Wicked!|
-02|2022-03-03|Sweet!|"""
-)
-lines = iter(file.read().splitlines())
+with open("./example-data") as f:
+    data = parser.parse(file=f)
 
-
-# Parse the file
-
-data = parser.parse(lines=lines)
 assert data == Root(
     users=[
         User(
@@ -71,20 +60,10 @@ assert data == Root(
 
 # If the file is invalid we will get an error
 
-
-# Andy's 1st comment has an invalid posted_at
-file = io.StringIO(
-    """01|Holly|16|
-02|2022-01-01|Awesome!|
-01|Andy|24|
-02|oops|Wicked!|
-02|2022-03-03|Sweet!|"""
-)
-lines = iter(file.read().splitlines())
-
-try:
-    parser.parse(lines=lines)
-    assert False
-except FileParseError as e:
-    assert e.error == "[posted_at] invalid date format"
-    assert e.line_number == 4
+with open("./example-data-invalid") as f:
+    try:
+        parser.parse(file=f)
+        assert False, "Expected an error, but no error was raised."
+    except FileParseError as e:
+        assert e.error == "[posted_at] invalid date format"
+        assert e.line_number == 5

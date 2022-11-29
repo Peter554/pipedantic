@@ -1,17 +1,20 @@
+import re
 import typing as t
 
 
 class PeekLines:
-    def __init__(self, *, lines: t.Iterator[str], skip_empty_lines=False):
+    def __init__(self, *, lines: t.Iterator[str], skip_line_patterns: list[re.Pattern]):
         self._lines = lines
-        self._skip_empty_lines = skip_empty_lines
+        self._skip_line_patterns = skip_line_patterns
         self._next_line = None
         self._next_line_number = 0
 
     def peek(self):
         while True:
             peek_line_number, peek_line = self._peek()
-            if peek_line != "" or not self._skip_empty_lines:
+            if peek_line is None or not any(
+                [pattern.match(peek_line) for pattern in self._skip_line_patterns]
+            ):
                 return peek_line_number, peek_line
             else:
                 self._next_line = None

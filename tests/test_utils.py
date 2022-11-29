@@ -1,3 +1,5 @@
+import re
+
 from pipedantic import utils
 
 
@@ -10,7 +12,7 @@ baz
 bax""".splitlines()
     )
 
-    peek_lines = utils.PeekLines(lines=lines)
+    peek_lines = utils.PeekLines(lines=lines, skip_line_patterns=[])
 
     assert peek_lines.peek() == (1, "foo")
     assert peek_lines.peek() == (1, "foo")
@@ -31,7 +33,7 @@ bax""".splitlines()
         assert peek_lines.consume() == (None, None)
 
 
-def test_peek_lines_skip_empty_lines():
+def test_peek_lines_skip_line_patterns_empty_lines():
     lines = iter(
         """
 
@@ -45,7 +47,7 @@ bax
 """.splitlines()
     )
 
-    peek_lines = utils.PeekLines(lines=lines, skip_empty_lines=True)
+    peek_lines = utils.PeekLines(lines=lines, skip_line_patterns=[re.compile(r"^$")])
 
     assert peek_lines.peek() == (3, "foo")
     assert peek_lines.peek() == (3, "foo")

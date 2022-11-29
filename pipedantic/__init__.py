@@ -1,4 +1,5 @@
 import json
+import re
 import typing as t
 
 import pydantic
@@ -32,8 +33,10 @@ class PipeDelimitedFileParser(t.Generic[T]):
         }
         self._reverse_spec = {v: k for k, v in self._spec.items()}
 
-    def parse(self, *, lines: t.Iterator[str]) -> T:
-        self._peek_lines = utils.PeekLines(lines=lines, skip_empty_lines=True)
+    def parse(self, *, file: t.Iterator[str]) -> T:
+        self._peek_lines = utils.PeekLines(
+            lines=file, skip_line_patterns=[re.compile(r"^$"), re.compile(r"^#")]
+        )
         return self._parse_rule("__root__")
 
     def _parse_rule(self, rule):
