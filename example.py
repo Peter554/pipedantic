@@ -26,7 +26,7 @@ class Root(pydantic.BaseModel):
 # Define the parser
 
 parser = PipeDelimitedFileParser[Root](
-    doc_model=Root,
+    root_model=Root,
     line_models={
         "01": User,
         "02": Comment,

@@ -23,11 +23,11 @@ class PipeDelimitedFileParser(t.Generic[T]):
     def __init__(
         self,
         *,
-        doc_model: t.Type[T],
+        root_model: t.Type[T],
         line_models: dict[str, t.Type[pydantic.BaseModel]],
     ):
         self._spec: dict[str, t.Type[pydantic.BaseModel]] = {
-            "__root__": doc_model,
+            "__root__": root_model,
             **line_models,
         }
         self._reverse_spec = {v: k for k, v in self._spec.items()}

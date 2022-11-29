@@ -65,7 +65,7 @@ class Root(pydantic.BaseModel):
 )
 def test_parse_success(text):
     parser = PipeDelimitedFileParser[Root](
-        doc_model=Root,
+        root_model=Root,
         line_models={
             "01": User,
             "02": Comment,
@@ -146,7 +146,7 @@ def test_parse_success(text):
 )
 def test_parse_failure(text, expected_line_number, expected_error):
     parser = PipeDelimitedFileParser[Root](
-        doc_model=Root,
+        root_model=Root,
         line_models={
             "01": User,
             "02": Comment,
