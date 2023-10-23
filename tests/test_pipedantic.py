@@ -27,7 +27,7 @@ class User(pydantic.BaseModel):
     name: str
     dob: datetime.date
     comments: list[Comment]
-    pet: Pet | None
+    pet: Pet | None = None
     best_friend: BestFriend
 
 
@@ -190,7 +190,7 @@ def test_parse_success_from_file():
 01|3|Alice|1994-02-25|
 04|1|""",
             1,
-            "[dob] invalid date format",
+            "[dob] Input should be a valid date or datetime, input is too short",
         ],
         # L3 likes should be int
         [
@@ -205,7 +205,7 @@ def test_parse_success_from_file():
 01|3|Alice|1994-02-25|
 04|1|""",
             3,
-            "[likes] value is not a valid integer",
+            "[likes] Input should be a valid integer, unable to parse string as an integer",
         ],
         # L4 invalid pet type
         [
@@ -220,7 +220,7 @@ def test_parse_success_from_file():
 01|3|Alice|1994-02-25|
 04|1|""",
             4,
-            "[type] unexpected value; permitted: 'dog', 'cat'",
+            "[type] Input should be 'dog' or 'cat'",
         ],
         # L1 is missing a required child (best_friend, 04)
         [
@@ -234,7 +234,7 @@ def test_parse_success_from_file():
 01|3|Alice|1994-02-25|
 04|1|""",
             1,
-            "[best_friend (04)] field required",
+            "[best_friend (04)] Field required",
         ],
         # L6 is missing a field (dob)
         [

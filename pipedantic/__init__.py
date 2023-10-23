@@ -48,11 +48,11 @@ class PipeDelimitedFileParser(t.Generic[T]):
         rule_model = self._spec[rule]
         line_fields = {
             k: v
-            for k, v in rule_model.__fields__.items()
+            for k, v in rule_model.model_fields.items()
             if self._get_child_type(v.annotation) is None
         }
         child_fields = {
-            k: v for k, v in rule_model.__fields__.items() if k not in line_fields
+            k: v for k, v in rule_model.model_fields.items() if k not in line_fields
         }
 
         data = {}
@@ -97,7 +97,7 @@ class PipeDelimitedFileParser(t.Generic[T]):
                 data[child_field_name] = items
 
         try:
-            return rule_model.parse_obj(data)
+            return rule_model.model_validate(data)
         except pydantic.ValidationError as e:
             raise FileParseError(
                 error=self._format_pydantic_validation_error(e, child_fields),

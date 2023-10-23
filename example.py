@@ -64,5 +64,8 @@ with open("./example-data-invalid") as f:
         parser.parse(file=f)
         assert False, "Expected an error, but no error was raised."
     except FileParseError as e:
-        assert e.error == "[posted_at] invalid date format"
+        assert (
+            e.error
+            == "[posted_at] Input should be a valid date or datetime, input is too short"
+        )
         assert e.line_number == 5
