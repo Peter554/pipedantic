@@ -4,12 +4,11 @@ import typing as t
 
 import pydantic
 
-
 from pipedantic import utils
 
 
 class FileParseError(Exception):
-    def __init__(self, *, error: str, line_number: t.Optional[int] = None):
+    def __init__(self, *, error: str, line_number: int | None = None):
         self.error = error
         self.line_number = line_number
 
@@ -24,10 +23,10 @@ class PipeDelimitedFileParser(t.Generic[T]):
     def __init__(
         self,
         *,
-        root_model: t.Type[T],
-        line_models: dict[str, t.Type[pydantic.BaseModel]],
+        root_model: type[T],
+        line_models: dict[str, type[pydantic.BaseModel]],
     ):
-        self._spec: dict[str, t.Type[pydantic.BaseModel]] = {
+        self._spec: dict[str, type[pydantic.BaseModel]] = {
             "__root__": root_model,
             **line_models,
         }
@@ -75,7 +74,7 @@ class PipeDelimitedFileParser(t.Generic[T]):
                 )
             elif len(line_parts) > len(line_fields):
                 raise FileParseError(
-                    error=f"Line has extra data",
+                    error="Line has extra data",
                     line_number=line_number,
                 )
             for idx, line_field_name in enumerate(line_fields):
@@ -105,22 +104,28 @@ class PipeDelimitedFileParser(t.Generic[T]):
                 line_number=line_number,
             ) from e
 
-    def _get_child_type(self, type_):
+    def _get_child_type(self, type_) -> tuple[type, str] | None:
         if t.get_origin(type_) == t.Literal:
             return None
         elif self._is_subclass_safe(type_, pydantic.BaseModel):
-            return (type_, "1")
-        elif t.get_origin(type_) == t.Union and type(None) in t.get_args(
-            type_
-        ):  # Optional
-            inner_type = t.get_args(type_)[0]
+            return type_, "1"
+        elif self._is_union_type(type_) and type(None) in t.get_args(type_):  # Optional
+            args = [arg for arg in t.get_args(type_) if arg != type(None)]
+            assert len(args) == 1
+            inner_type = args[0]
             if self._is_subclass_safe(inner_type, pydantic.BaseModel):
-                return (inner_type, "?")
+                return inner_type, "?"
         elif t.get_origin(type_) == list:
             inner_type = t.get_args(type_)[0]
             if self._is_subclass_safe(inner_type, pydantic.BaseModel):
-                return (inner_type, "*")
+                return inner_type, "*"
         return None
+
+    @staticmethod
+    def _is_union_type(type_: type) -> bool:
+        origin = t.get_origin(type_)
+        # hack (t.get_origin(int | None) == t.Union not working?)
+        return origin == t.Union or origin == t.get_origin(int | None)
 
     @staticmethod
     def _is_subclass_safe(type_, class_) -> bool:

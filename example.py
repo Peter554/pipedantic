@@ -1,9 +1,8 @@
-import io
 import datetime
+
 import pydantic
 
-from pipedantic import PipeDelimitedFileParser, FileParseError
-
+from pipedantic import FileParseError, PipeDelimitedFileParser
 
 # Define the models/spec
 

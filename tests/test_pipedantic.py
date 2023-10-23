@@ -5,7 +5,7 @@ import typing as t
 import pydantic
 import pytest
 
-from pipedantic import PipeDelimitedFileParser, FileParseError
+from pipedantic import FileParseError, PipeDelimitedFileParser
 
 
 class Pet(pydantic.BaseModel):
@@ -27,7 +27,7 @@ class User(pydantic.BaseModel):
     name: str
     dob: datetime.date
     comments: list[Comment]
-    pet: t.Optional[Pet]
+    pet: Pet | None
     best_friend: BestFriend
 
 
